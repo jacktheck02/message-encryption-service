@@ -1,6 +1,8 @@
+/// <reference types="hardhat/types/runtime" />
 import { expect } from "chai";
-import { ethers } from "hardhat";
 import { CredentialManager } from "../typechain-types";
+import { ethers as v6ethers } from "ethers";
+import { ethers } from "hardhat";
 
 describe("ContractManager (TypeScript Tests)", function () {
     let cm: CredentialManager;
@@ -13,7 +15,7 @@ describe("ContractManager (TypeScript Tests)", function () {
         await cm.waitForDeployment();
     });
 
-    const makeHash = (txt: string) => ethers.keccak256(ethers.toUtf8Bytes(txt));
+    const makeHash = (txt: string) => v6ethers.keccak256(ethers.toUtf8Bytes(txt));
 
     it("should register a credential", async () => {
         const credentialHash = makeHash("credential-1");
