@@ -1,4 +1,4 @@
-export const DIDRegistryAddress = "";
+export const DIDRegistryAddress = "0x39B181b6eb3d3F573F73caA8222f524B76a94Bb2";
 
 export const DIDRegistryABI = [
 	{
