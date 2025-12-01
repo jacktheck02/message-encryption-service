@@ -1,5 +1,3 @@
-export const CredentialManagerAddress = "";
-
 export const CredentialManagerABI = [
 	{
 		"anonymous": false,

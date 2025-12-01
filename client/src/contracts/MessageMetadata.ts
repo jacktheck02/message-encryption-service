@@ -1,5 +1,3 @@
-export const MessageMetadataAddress = "";
-
 export const MessageMetadataABI = [
 	{
 		"anonymous": false,

@@ -1,8 +1,24 @@
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount, useReadContract, useWriteContract} from 'wagmi';
-import { DIDRegistryABI, DIDRegistryAddress } from "../contracts/DIDRegistry";
+import { DIDRegistryABI } from "./contracts/DIDRegistry";
+import { useCredentialStatus } from './hooks/useCredentialStatus';
+import MessagingDashboard from './components/MessagingDashboard';
 
 const App = () => {
+  async function requestCredential(did: string) {
+    const response = await fetch("http://localhost:3001/issue-credential", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ did }),
+    });
+
+    const result = await response.json();
+
+    localStorage.setItem("credential_blob", JSON.stringify(result.blob));
+
+    console.log("Credential issued:", result);
+  }
+
   const { address, isConnected } = useAccount();
 
   const did = address
@@ -10,11 +26,13 @@ const App = () => {
     : "";
 
   const { data, isLoading, error } = useReadContract({
-    address: DIDRegistryAddress,
+    address: import.meta.env.VITE_DID_REGISTRY_ADDRESS,
     abi: DIDRegistryABI,
     functionName: "getDID",
     args: [did],
   });
+
+  const { hasCredential, isCredentialLoading } = useCredentialStatus();
 
   const { writeContract: registerDID } = useWriteContract();
 
@@ -24,7 +42,7 @@ const App = () => {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || isCredentialLoading) {
     return (
       <div>Loading...</div>
     );
@@ -37,7 +55,7 @@ const App = () => {
         <button
           onClick={() => {
             registerDID({
-              address: DIDRegistryAddress,
+              address: import.meta.env.VITE_DID_REGISTRY_ADDRESS,
               abi: DIDRegistryABI,
               functionName: "registerDID",
               args: [address, "initial-doc-hash"]
@@ -50,14 +68,20 @@ const App = () => {
     );
   }
 
-  return (
-    <div>
-      <p>Welcome, your DID is registered!</p>
-      <p>DID: {did}</p>
+  if(data && !hasCredential) {
+    return (
+    <div style={{ padding: "2rem" }}>
+      <h2>Verification Required</h2>
+      <p>You must obtain a valid messaging credential before continuing.</p>
 
-      <h3>You can now access the messaging UI!</h3>
+      <button onClick={async () => await requestCredential(did)}>
+        Request Credential
+      </button>
     </div>
   );
+  }
+
+  return <MessagingDashboard />;
 };
 
 export default App;
